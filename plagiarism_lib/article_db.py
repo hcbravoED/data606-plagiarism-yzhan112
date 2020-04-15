@@ -5,15 +5,29 @@ def _read_data(filepath):
     with open(filepath, 'r') as f:
         result = []
         for line in f:
-            first_space = line.find(' ')
-            article_id = line[:first_space]
-            text = line[(first_space+1):]
+            article_id, text = line.split(' ', 1)
             item = (article_id, text)
             result.append(item)
+
+            #article_id, *text = line.strip(' ')
+            #text = ' '.join(map(str, text))
+            #item = (article_id, text)
+            #result.append(item)
+
+            #first_space = line.find(' ')
+            #article_id = line[:first_space]
+            #text = line[(first_space+1):]
+            #item = (article_id, text)
+            #result.append(item)
     return result
 
 def _process_articles(articles):
-    _punct_table = str.maketrans(dict.fromkeys(string.punctuation)) # dictionary method fromkeys() creates a new dictionary with keys from seq and values set to value; maketrans creates a Unicode representation of each character for translation.
+    _punct_table = str.maketrans(dict.fromkeys(string.punctuation))
+    # dictionary method fromkeys() creates a new dictionary with keys from seq
+    # and values set to value,{',': None,........};
+    # str.maketrans creates a table of Unicode representation of each
+    # character for translation, things that map to None are removed, like
+    # above ",".
 
     def _process_one(x):
         docid, text = x

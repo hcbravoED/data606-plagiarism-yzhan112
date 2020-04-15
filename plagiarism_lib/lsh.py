@@ -41,26 +41,46 @@ def _do_lsh(mh_matrix, threshold):
 
     # choose the number of bands, and rows per band to use in LSH
     b, _ = _choose_nbands(threshold, n)
-    r = int(n / b)
+    r = n/b
+    #r = math.floor(n / b)
     print ("Using %d bands for %d rows" % (b, n))
 
     ndocs = len(mh_matrix._docids)
 
     # generate a random hash function that takes vectors of length r as input
-    hash_func = _make_vector_hash(r)
+    hash_func = _make_vector_hash(math.ceil(r))
 
     # initalize list of hashtables, will be populated with one hashtable
     # per band
     buckets = []
+    band_record = []
+    start_record = []
 
     # fill hash tables for each band
     for band in range(b):
+        band_record.append(band)
         hashtable = defaultdict(list)
-        start = r * band
-        end = min(start + r, n)
+        start = int(r * band)
+        if start >= n:
+            start = start_record.pop(-1) + 1
+            end = n
+        else:
+            end = min(int(r * band + r), n)
+
+        start_record.append(start)
+        print(f'[{start}, {end}]')
+        #if start <= n:
         for i in range(ndocs):
             hashtable[hash_func(mh_matrix._mat[start:end, i])].append(mh_matrix._docids[i])
         buckets.append(hashtable)
+        if end == n:
+            break
+        #else:
+            #print(f'start is our of boundary of n. start is {start}. band is {band}')
+            #break
+    last_band = band_record.pop(-1)
+    last_start = start_record.pop(-1)
+    print(f'b is {b}, r is {r}, band is {last_band}, start is {last_start}')
     return buckets
 
 def _get_candidates(hashtables):
